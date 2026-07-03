@@ -1,0 +1,72 @@
+{
+  "source": "Common Paper (https://github.com/CommonPaper)",
+  "license": "CC BY 4.0",
+  "documentTypes": [
+    {
+      "id": "mutual-nda",
+      "name": "Mutual Non-Disclosure Agreement",
+      "description": "A standard mutual NDA for protecting confidential information exchanged between two parties evaluating a potential business relationship. Includes cover page terms (effective date, term length, governing law) in the same flow.",
+      "status": "available"
+    },
+    {
+      "id": "cloud-service-agreement",
+      "name": "Cloud Service Agreement",
+      "description": "A comprehensive agreement for selling and buying cloud software and SaaS products, covering access, payment, security, liability, and confidentiality.",
+      "status": "planned"
+    },
+    {
+      "id": "design-partner-agreement",
+      "name": "Design Partner Agreement",
+      "description": "An agreement for early product access where partners provide feedback in exchange for using pre-release software, helping vendors develop and improve their products.",
+      "status": "planned"
+    },
+    {
+      "id": "service-level-agreement",
+      "name": "Service Level Agreement",
+      "description": "A standard SLA defining uptime targets, response time commitments, service credits, and remedies for cloud service providers.",
+      "status": "planned"
+    },
+    {
+      "id": "professional-services-agreement",
+      "name": "Professional Services Agreement",
+      "description": "An agreement for professional services engagements covering deliverables, intellectual property, payment terms, and project management.",
+      "status": "planned"
+    },
+    {
+      "id": "partnership-agreement",
+      "name": "Partnership Agreement",
+      "description": "A standard agreement for business partnerships covering cooperation obligations, trademark licensing, fees, confidentiality, and liability.",
+      "status": "planned"
+    },
+    {
+      "id": "software-license-agreement",
+      "name": "Software License Agreement",
+      "description": "A comprehensive license agreement for on-premise or installable software, covering licensing terms, restrictions, warranties, and support.",
+      "status": "planned"
+    },
+    {
+      "id": "data-processing-agreement",
+      "name": "Data Processing Agreement",
+      "description": "A GDPR-compliant data processing agreement covering data protection obligations, subprocessors, international transfers, and security requirements.",
+      "status": "planned"
+    },
+    {
+      "id": "pilot-agreement",
+      "name": "Pilot Agreement",
+      "description": "A short-term trial or evaluation agreement allowing prospective customers to test a product before committing to a longer-term deal.",
+      "status": "planned"
+    },
+    {
+      "id": "business-associate-agreement",
+      "name": "Business Associate Agreement",
+      "description": "A HIPAA-compliant agreement for business associates handling protected health information (PHI), covering privacy, security, and breach notification requirements.",
+      "status": "planned"
+    },
+    {
+      "id": "ai-addendum",
+      "name": "AI Addendum",
+      "description": "An addendum for agreements involving AI/ML features, covering input/output ownership, model training restrictions, and AI-specific disclaimers.",
+      "status": "planned"
+    }
+  ]
+}
