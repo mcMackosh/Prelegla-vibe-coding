@@ -2,9 +2,13 @@ import { BadGatewayException, InternalServerErrorException } from '@nestjs/commo
 import { ChatService } from './chat.service';
 
 function mockOpenRouterResponse(content: unknown) {
+  return mockOpenRouterResponseRaw(JSON.stringify(content));
+}
+
+function mockOpenRouterResponseRaw(rawContent: string) {
   return {
     ok: true,
-    json: async () => ({ choices: [{ message: { content: JSON.stringify(content) } }] }),
+    json: async () => ({ choices: [{ message: { content: rawContent } }] }),
   } as Response;
 }
 
@@ -45,6 +49,29 @@ describe('ChatService', () => {
         headers: expect.objectContaining({ Authorization: 'Bearer test-key' }),
       })
     );
+  });
+
+  it('does not send response_format, since openai/gpt-oss-120b:free supports no response_format mode on any provider', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue(mockOpenRouterResponse({ reply: 'hi', fields: {} }));
+
+    await service.handleNdaTurn([{ role: 'user', content: 'hello' }]);
+
+    const requestBody = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(requestBody.response_format).toBeUndefined();
+  });
+
+  it('extracts the JSON object even when the model wraps it in prose or a markdown code fence', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue(
+      mockOpenRouterResponseRaw(
+        'Sure thing! ```json\n' +
+          JSON.stringify({ reply: 'Got it.', fields: { partyAName: 'Acme Corp.' } }) +
+          '\n```'
+      )
+    );
+
+    const result = await service.handleNdaTurn([{ role: 'user', content: 'Party A is Acme Corp.' }]);
+
+    expect(result).toEqual({ reply: 'Got it.', fields: { partyAName: 'Acme Corp.' } });
   });
 
   it('includes every NDA field name in the system prompt sent to OpenRouter', async () => {

@@ -9,6 +9,13 @@ export type NdaChatResult = {
   fields: NdaChatFields;
 };
 
+/**
+ * openai/gpt-oss-120b:free (the model CLAUDE.md mandates) does not support
+ * response_format/structured_outputs on any OpenRouter provider — confirmed via
+ * OpenRouter's /api/v1/models supported_parameters and provider.require_parameters
+ * routing (returns "No endpoints found that can handle the requested parameters").
+ * We therefore enforce JSON shape via prompt instructions only and parse leniently.
+ */
 function buildSystemPrompt(): string {
   const fieldList = NDA_FIELDS.map((f) => `- ${f.key}: ${f.description}`).join('\n');
   return [
@@ -20,33 +27,21 @@ function buildSystemPrompt(): string {
     '- Only fill a field when the user has clearly stated it. Use an empty string for any field you are not confident about — never guess or invent a value.',
     '- Keep "reply" conversational and short: acknowledge what you learned, then ask for the next missing piece of information.',
     '- Once all fields are known, tell the user their Mutual NDA is ready to review in the form.',
+    'Response format (strict):',
+    '- Reply with ONLY a single JSON object — no markdown code fences, no text before or after it.',
+    `- The JSON object must have exactly two top-level keys: "reply" (string) and "fields" (an object with exactly these string keys: ${NDA_FIELDS.map((f) => f.key).join(', ')}).`,
+    '- Every field key must be present in "fields", using an empty string for anything unknown.',
   ].join('\n\n');
 }
 
-function buildJsonSchema() {
-  const properties: Record<string, { type: 'string' }> = {};
-  for (const field of NDA_FIELDS) {
-    properties[field.key] = { type: 'string' };
+function extractJsonObject(content: string): unknown {
+  try {
+    return JSON.parse(content);
+  } catch {
+    const match = content.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('no JSON object found in response');
+    return JSON.parse(match[0]);
   }
-
-  return {
-    name: 'nda_chat_turn',
-    strict: true,
-    schema: {
-      type: 'object',
-      properties: {
-        reply: { type: 'string' },
-        fields: {
-          type: 'object',
-          properties,
-          required: NDA_FIELDS.map((f) => f.key),
-          additionalProperties: false,
-        },
-      },
-      required: ['reply', 'fields'],
-      additionalProperties: false,
-    },
-  };
 }
 
 @Injectable()
@@ -69,7 +64,6 @@ export class ChatService {
         body: JSON.stringify({
           model,
           messages: [{ role: 'system', content: buildSystemPrompt() }, ...messages],
-          response_format: { type: 'json_schema', json_schema: buildJsonSchema() },
         }),
       });
     } catch {
@@ -83,7 +77,7 @@ export class ChatService {
     let parsed: NdaChatResult;
     try {
       const body = await response.json();
-      parsed = JSON.parse(body?.choices?.[0]?.message?.content);
+      parsed = extractJsonObject(body?.choices?.[0]?.message?.content) as NdaChatResult;
     } catch {
       throw new BadGatewayException('The AI assistant returned an unreadable response');
     }
