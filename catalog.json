@@ -1,57 +1,83 @@
-[
-  {
-    "name": "Mutual Non-Disclosure Agreement",
-    "description": "A mutual NDA that lets two parties disclose confidential information to each other for a stated purpose while protecting it from unauthorized use or disclosure.",
-    "filename": "Mutual-NDA.md"
-  },
-  {
-    "name": "Cloud Service Agreement",
-    "description": "A SaaS/cloud services agreement covering access and use of a cloud product, support, fees, data privacy, warranties, liability, and confidentiality between a provider and customer.",
-    "filename": "CSA.md"
-  },
-  {
-    "name": "Design Partner Agreement",
-    "description": "An agreement for early access design-partner programs where a partner tests a pre-release product and gives feedback in exchange for early access.",
-    "filename": "Design-Partner-Agreement.md"
-  },
-  {
-    "name": "Service Level Agreement",
-    "description": "An SLA defining uptime targets, support response times, and service credits/remedies for a cloud service provider's performance commitments.",
-    "filename": "SLA.md"
-  },
-  {
-    "name": "Professional Services Agreement",
-    "description": "An agreement governing consulting or professional services engagements, including statements of work, deliverables, IP ownership, fees, and warranties.",
-    "filename": "PSA.md"
-  },
-  {
-    "name": "Data Processing Agreement",
-    "description": "A GDPR/data-protection-focused DPA covering how a service provider processes personal data on behalf of a customer, including subprocessors, international transfers, and security incidents.",
-    "filename": "DPA.md"
-  },
-  {
-    "name": "Software License Agreement",
-    "description": "A license agreement for on-premise or installed software, covering license grants, restrictions, updates, warranties, and liability between a provider and customer.",
-    "filename": "Software-License-Agreement.md"
-  },
-  {
-    "name": "Partnership Agreement",
-    "description": "A business partnership/alliance agreement covering mutual obligations, trademark licensing, fees, confidentiality, and dispute escalation between two companies.",
-    "filename": "Partnership-Agreement.md"
-  },
-  {
-    "name": "Pilot Agreement",
-    "description": "A short-term pilot/evaluation agreement allowing a customer to trial a product before entering a longer-term definitive agreement.",
-    "filename": "Pilot-Agreement.md"
-  },
-  {
-    "name": "Business Associate Agreement",
-    "description": "A HIPAA-compliant BAA governing how a business associate may use and protect protected health information (PHI) on behalf of a covered entity.",
-    "filename": "BAA.md"
-  },
-  {
-    "name": "AI Addendum",
-    "description": "A standard addendum to an existing agreement that governs use of AI/ML features, including input/output ownership, model training rights, and AI-specific disclaimers.",
-    "filename": "AI-Addendum.md"
-  }
-]
+{
+  "source": "Common Paper (https://github.com/CommonPaper)",
+  "license": "CC BY 4.0",
+  "documentTypes": [
+    {
+      "id": "mutual-nda",
+      "name": "Mutual Non-Disclosure Agreement",
+      "description": "A standard mutual NDA for protecting confidential information exchanged between two parties evaluating a potential business relationship. Includes cover page terms (effective date, term length, governing law) in the same flow.",
+      "templateFile": "templates/Mutual-NDA.md",
+      "status": "available"
+    },
+    {
+      "id": "cloud-service-agreement",
+      "name": "Cloud Service Agreement",
+      "description": "A comprehensive agreement for selling and buying cloud software and SaaS products, covering access, payment, security, liability, and confidentiality.",
+      "templateFile": "templates/CSA.md",
+      "status": "planned"
+    },
+    {
+      "id": "design-partner-agreement",
+      "name": "Design Partner Agreement",
+      "description": "An agreement for early product access where partners provide feedback in exchange for using pre-release software, helping vendors develop and improve their products.",
+      "templateFile": "templates/Design-Partner-Agreement.md",
+      "status": "planned"
+    },
+    {
+      "id": "service-level-agreement",
+      "name": "Service Level Agreement",
+      "description": "A standard SLA defining uptime targets, response time commitments, service credits, and remedies for cloud service providers.",
+      "templateFile": "templates/SLA.md",
+      "status": "planned"
+    },
+    {
+      "id": "professional-services-agreement",
+      "name": "Professional Services Agreement",
+      "description": "An agreement for professional services engagements covering deliverables, intellectual property, payment terms, and project management.",
+      "templateFile": "templates/PSA.md",
+      "status": "planned"
+    },
+    {
+      "id": "partnership-agreement",
+      "name": "Partnership Agreement",
+      "description": "A standard agreement for business partnerships covering cooperation obligations, trademark licensing, fees, confidentiality, and liability.",
+      "templateFile": "templates/Partnership-Agreement.md",
+      "status": "planned"
+    },
+    {
+      "id": "software-license-agreement",
+      "name": "Software License Agreement",
+      "description": "A comprehensive license agreement for on-premise or installable software, covering licensing terms, restrictions, warranties, and support.",
+      "templateFile": "templates/Software-License-Agreement.md",
+      "status": "planned"
+    },
+    {
+      "id": "data-processing-agreement",
+      "name": "Data Processing Agreement",
+      "description": "A GDPR-compliant data processing agreement covering data protection obligations, subprocessors, international transfers, and security requirements.",
+      "templateFile": "templates/DPA.md",
+      "status": "planned"
+    },
+    {
+      "id": "pilot-agreement",
+      "name": "Pilot Agreement",
+      "description": "A short-term trial or evaluation agreement allowing prospective customers to test a product before committing to a longer-term deal.",
+      "templateFile": "templates/Pilot-Agreement.md",
+      "status": "planned"
+    },
+    {
+      "id": "business-associate-agreement",
+      "name": "Business Associate Agreement",
+      "description": "A HIPAA-compliant agreement for business associates handling protected health information (PHI), covering privacy, security, and breach notification requirements.",
+      "templateFile": "templates/BAA.md",
+      "status": "planned"
+    },
+    {
+      "id": "ai-addendum",
+      "name": "AI Addendum",
+      "description": "An addendum for agreements involving AI/ML features, covering input/output ownership, model training restrictions, and AI-specific disclaimers.",
+      "templateFile": "templates/AI-Addendum.md",
+      "status": "planned"
+    }
+  ]
+}
