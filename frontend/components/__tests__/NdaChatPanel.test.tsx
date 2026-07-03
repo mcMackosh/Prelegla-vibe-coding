@@ -8,9 +8,23 @@ vi.mock("@/lib/chat", () => ({
   sendNdaChatMessage: vi.fn(),
 }));
 
+async function openChat(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: "Open chat assistant" }));
+}
+
 describe("NdaChatPanel", () => {
-  it("renders a greeting message", () => {
+  it("stays closed until the toggle button is clicked", () => {
     render(<NdaChatPanel onFieldsExtracted={vi.fn()} />);
+
+    expect(screen.queryByPlaceholderText("Type a message…")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open chat assistant" })).toBeInTheDocument();
+  });
+
+  it("renders a greeting message once opened", async () => {
+    const user = userEvent.setup();
+    render(<NdaChatPanel onFieldsExtracted={vi.fn()} />);
+
+    await openChat(user);
 
     expect(screen.getByText(/Hi! I can help you fill out your Mutual NDA/)).toBeInTheDocument();
   });
@@ -24,6 +38,7 @@ describe("NdaChatPanel", () => {
     });
 
     render(<NdaChatPanel onFieldsExtracted={onFieldsExtracted} />);
+    await openChat(user);
 
     await user.type(screen.getByPlaceholderText("Type a message…"), "Party A is Acme Corp.");
     await user.click(screen.getByRole("button", { name: "Send" }));
@@ -41,6 +56,7 @@ describe("NdaChatPanel", () => {
     vi.mocked(sendNdaChatMessage).mockRejectedValue(new Error("network error"));
 
     render(<NdaChatPanel onFieldsExtracted={vi.fn()} />);
+    await openChat(user);
 
     await user.type(screen.getByPlaceholderText("Type a message…"), "hello");
     await user.click(screen.getByRole("button", { name: "Send" }));
@@ -48,5 +64,22 @@ describe("NdaChatPanel", () => {
     expect(
       await screen.findByText("Something went wrong talking to the assistant. Please try again.")
     ).toBeInTheDocument();
+  });
+
+  it("closes the panel and reopens with the conversation preserved", async () => {
+    const user = userEvent.setup();
+    vi.mocked(sendNdaChatMessage).mockResolvedValue({ reply: "Noted.", fields: {} });
+
+    render(<NdaChatPanel onFieldsExtracted={vi.fn()} />);
+    await openChat(user);
+    await user.type(screen.getByPlaceholderText("Type a message…"), "hi");
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    expect(await screen.findByText("Noted.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Close chat assistant" }));
+    expect(screen.queryByText("Noted.")).not.toBeInTheDocument();
+
+    await openChat(user);
+    expect(screen.getByText("Noted.")).toBeInTheDocument();
   });
 });

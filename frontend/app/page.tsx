@@ -58,14 +58,7 @@ export default function Home() {
         </div>
       </div>
 
-      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 py-10 lg:grid-cols-3">
-        <section>
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-700">
-            Chat Assistant
-          </h2>
-          <NdaChatPanel onFieldsExtracted={handleFieldsExtracted} />
-        </section>
-
+      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 py-10 lg:grid-cols-2">
         <section className="space-y-6">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-brand-700">
             Agreement Details
@@ -83,6 +76,8 @@ export default function Home() {
           <NdaPreview formData={formData} />
         </section>
       </main>
+
+      <NdaChatPanel onFieldsExtracted={handleFieldsExtracted} />
     </div>
   );
 }
