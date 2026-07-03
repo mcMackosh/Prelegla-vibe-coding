@@ -39,22 +39,22 @@ export default function NdaChatPanel({
   }
 
   return (
-    <div className="flex h-full flex-col rounded-md border border-gray-200 bg-white">
+    <div className="flex h-full flex-col rounded-xl border border-brand-100 bg-white shadow-sm">
       <div className="flex-1 space-y-3 overflow-y-auto p-4" style={{ maxHeight: "28rem" }}>
         {messages.map((message, index) => (
           <div
             key={index}
-            className={`rounded-md px-3 py-2 text-sm ${
+            className={`rounded-lg px-3 py-2 text-sm ${
               message.role === "user"
-                ? "ml-6 bg-blue-600 text-white"
-                : "mr-6 bg-gray-100 text-gray-900"
+                ? "ml-6 bg-brand-800 text-white"
+                : "mr-6 bg-brand-50 text-ink"
             }`}
           >
             {message.content}
           </div>
         ))}
         {status === "sending" && (
-          <div className="mr-6 rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-500">Typing…</div>
+          <div className="mr-6 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-700/70">Typing…</div>
         )}
       </div>
 
@@ -64,9 +64,9 @@ export default function NdaChatPanel({
         </p>
       )}
 
-      <form onSubmit={handleSubmit} className="flex gap-2 border-t border-gray-200 p-3">
+      <form onSubmit={handleSubmit} className="flex gap-2 border-t border-brand-100 p-3">
         <input
-          className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-md border border-brand-100 bg-white px-3 py-2 text-sm text-ink shadow-sm focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
           placeholder="Type a message…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -75,7 +75,7 @@ export default function NdaChatPanel({
         <button
           type="submit"
           disabled={status === "sending" || !input.trim()}
-          className="shrink-0 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:opacity-50"
+          className="shrink-0 rounded-md bg-accent-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-accent-600 disabled:opacity-50"
         >
           Send
         </button>
