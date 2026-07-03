@@ -17,22 +17,26 @@ When implementing a new feature:
 3. Validate the implementation with unit and integration tests, fixing any issues before completion.
 4. Create a Pull Request using the available GitHub tools.
 
-## Development Workflow
+## LLM Integration
 
-When implementing features that require LLM integration, use LiteLLM through OpenRouter with the `openai/gpt-oss-120b:free` model. Prefer Structured Outputs whenever possible so responses can be reliably parsed and mapped to the corresponding fields in legal documents.
+When implementing features that require LLM integration:
 
-The project includes an `OPENROUTER_API_KEY` in the `.env` file located at the project root. Use this key for all OpenRouter API requests.
+- Always use LiteLLM via OpenRouter (or a Node.js compatible wrapper / native fetch).
+- Use the `openai/gpt-oss-120b:free` model unless explicitly instructed otherwise.
+- Prefer Structured Outputs whenever possible so responses can be reliably parsed and mapped to the corresponding fields in legal documents.
+- Read the `OPENROUTER_API_KEY` from the `.env` file in the project root.
+- Do not hardcode API keys or model names in the source code.
 
 ## Technical Architecture
 
 The application should run entirely inside Docker.
 
-- Backend located in `backend/` using FastAPI and managed as a `uv` project.
-- Frontend located in `frontend/`.
-- Use SQLite as the database.
-- Recreate the database whenever the Docker environment starts.
-- Support basic user authentication (sign up / sign in).
-- Prefer serving the production frontend directly from FastAPI if practical.
+- **Backend:** Located in `backend/` using **Node.js (NestJS)** and managed using `npm` / `pnpm`.
+- **Frontend:** Located in `frontend/` using **React (Next.js)**.
+- **Database:** Use **SQLite** via an ORM (Prisma / TypeORM) as the temporary database.
+- Recreate the database schema whenever the Docker environment starts.
+- **Authentication:** Support basic user authentication structure (sign up / sign in) as **frontend and backend placeholders (routes and minimal UI scaffolding without production DB logic)**.
+- Prefer serving the production frontend static files directly via NestJS `ServeStaticModule` if practical, or via multi-stage Docker builds.
 
 Provide startup and shutdown scripts for all supported operating systems:
 
@@ -48,16 +52,3 @@ scripts/stop-linux.sh
 # Windows
 scripts/start-windows.ps1
 scripts/stop-windows.ps1
-```
-
-Backend endpoint:
-
-http://localhost:8000
-
-## UI Theme
-
-- Primary Blue: `#1F8DD6`
-- Accent Gold: `#E4A30A`
-- Secondary Purple: `#6D3A8F`
-- Dark Blue: `#05254A`
-- Neutral Gray: `#8A8A8A`
