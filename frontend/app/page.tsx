@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
+import NdaChatPanel from "@/components/NdaChatPanel";
 import NdaForm from "@/components/NdaForm";
 import NdaPreview from "@/components/NdaPreview";
 import { EMPTY_FORM_DATA, NdaFormData } from "@/lib/types";
@@ -21,6 +22,13 @@ export default function Home() {
 
   function handleFieldChange(key: keyof NdaFormData, value: string) {
     setFormData((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function handleFieldsExtracted(fields: Partial<NdaFormData>) {
+    const nonEmptyFields = Object.fromEntries(
+      Object.entries(fields).filter(([, value]) => value)
+    );
+    setFormData((prev) => ({ ...prev, ...nonEmptyFields }));
   }
 
   return (
@@ -45,7 +53,14 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 py-8 lg:grid-cols-2">
+      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 py-8 lg:grid-cols-3">
+        <section>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
+            Chat Assistant
+          </h2>
+          <NdaChatPanel onFieldsExtracted={handleFieldsExtracted} />
+        </section>
+
         <section className="space-y-6">
           <NdaForm formData={formData} onFieldChange={handleFieldChange} />
           <NdaDownloadButton formData={formData} />
