@@ -2,13 +2,11 @@
 
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import NdaPdfDocument from "@/components/NdaPdfDocument";
+import { buildNdaFileName } from "@/lib/fileName";
 import { NdaFormData } from "@/lib/types";
 
 export default function NdaDownloadButton({ formData }: { formData: NdaFormData }) {
-  const fileName = `Mutual-NDA-${formData.partyAName || "PartyA"}-${formData.partyBName || "PartyB"}.pdf`.replace(
-    /\s+/g,
-    "-"
-  );
+  const fileName = buildNdaFileName(formData);
 
   return (
     <PDFDownloadLink
