@@ -40,12 +40,37 @@ function buildSystemPrompt(): string {
     '- If the user explicitly defers a decision to you ("you decide", "whatever is standard", "up to you", "на свій розсуд", etc.), fill that field yourself with a reasonable, standard choice (e.g. a common governing law/jurisdiction pairing, a typical 1-3 year term, a generic purpose description) instead of leaving it blank or asking again. Say what you chose in "reply" so the user can correct it if they want something else.',
     '- Only leave a field blank when you have neither information from the user nor a reasonable default to offer, and the user has not delegated the decision to you. Never invent specific facts about the actual parties (names, addresses, signer identities) — those must come from the user.',
     "- Keep \"reply\" natural and conversational, like a helpful colleague, not a scripted intake bot. Vary your phrasing; do not always ask \"what's next\" in the same way.",
-    '- Once all fields are known, tell the user their Mutual NDA is ready to review in the form.',
+    '- If, after this turn, any field is still blank (and the user has not deferred it to you), "reply" MUST end with a direct question asking for at least one of the missing pieces of information. Never end a turn by just restating or summarizing what you have — if something is still needed, ask for it.',
+    '- Once all fields are known, tell the user their Mutual NDA is ready to review in the form (and do not ask a further question).',
     'Response format (strict):',
     '- Reply with ONLY a single JSON object — no markdown code fences, no text before or after it.',
     `- The JSON object must have exactly two top-level keys: "reply" (string) and "fields" (an object with exactly these string keys: ${NDA_FIELDS.map((f) => f.key).join(', ')}).`,
     '- Every field key must be present in "fields", using an empty string for anything still unknown.',
   ].join('\n\n');
+}
+
+/**
+ * Backstop for the "always ask a follow-up when info is still missing" rule in the
+ * system prompt: prompt instructions are best-effort, not guaranteed, so if the model's
+ * reply doesn't actually end in a question while fields remain blank, append one
+ * deterministically rather than silently leaving the user without a next step.
+ */
+function ensureFollowUpQuestion(result: NdaChatResult): NdaChatResult {
+  const missingField = NDA_FIELDS.find((f) => !result.fields[f.key]?.trim());
+  if (!missingField) {
+    return result;
+  }
+
+  const reply = result.reply.trim();
+  if (reply.endsWith('?')) {
+    return result;
+  }
+
+  const separator = reply.length > 0 ? ' ' : '';
+  return {
+    ...result,
+    reply: `${reply}${separator}Could you tell me the ${missingField.description.charAt(0).toLowerCase()}${missingField.description.slice(1)}?`,
+  };
 }
 
 function extractJsonObject(content: string): unknown {
@@ -114,7 +139,7 @@ export class ChatService {
         continue;
       }
 
-      return parsed;
+      return ensureFollowUpQuestion(parsed);
     }
 
     throw lastError;

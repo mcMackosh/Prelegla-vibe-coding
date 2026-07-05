@@ -9,7 +9,7 @@ describe("auth API client", () => {
   it("signUp posts credentials to /auth/signup and returns the parsed response", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ status: "ok", email: "a@b.com" }),
+      json: async () => ({ accessToken: "signed-jwt", email: "a@b.com" }),
     });
     vi.stubGlobal("fetch", fetchMock);
 
@@ -19,7 +19,7 @@ describe("auth API client", () => {
       expect.stringContaining("/auth/signup"),
       expect.objectContaining({ method: "POST" })
     );
-    expect(result).toEqual({ status: "ok", email: "a@b.com" });
+    expect(result).toEqual({ accessToken: "signed-jwt", email: "a@b.com" });
   });
 
   it("signIn throws with the server's message when the response is not ok", async () => {
