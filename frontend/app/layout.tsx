@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Lora } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,8 +12,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const lora = Lora({
+  variable: "--font-display",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "Mutual NDA Creator",
+  title: "LegalFlow — Mutual NDA Creator",
   description: "Generate a Common Paper Mutual Non-Disclosure Agreement and download it as a PDF.",
 };
 
@@ -25,9 +30,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-paper">{children}</body>
     </html>
   );
 }

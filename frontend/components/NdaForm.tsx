@@ -52,11 +52,11 @@ function Field({
   onChange: (value: string) => void;
 }) {
   const inputClasses =
-    "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
+    "w-full rounded-md border border-brand-100 bg-white px-3 py-2 text-sm text-ink shadow-sm transition focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500";
 
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-gray-700">{config.label}</span>
+      <span className="mb-1 block text-sm font-medium text-ink/80">{config.label}</span>
       {config.multiline ? (
         <textarea
           className={inputClasses}
@@ -91,7 +91,7 @@ function FieldGroup({
 }) {
   return (
     <fieldset className="space-y-3">
-      <legend className="text-base font-semibold text-gray-900">{title}</legend>
+      <legend className="font-serif text-base font-semibold text-brand-900">{title}</legend>
       {fields.map((field) => (
         <Field
           key={field.key}

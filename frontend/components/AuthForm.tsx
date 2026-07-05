@@ -29,12 +29,12 @@ export default function AuthForm({
   }
 
   const inputClasses =
-    "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
+    "w-full rounded-md border border-brand-100 bg-white px-3 py-2 text-sm text-ink shadow-sm focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <label className="block">
-        <span className="mb-1 block text-sm font-medium text-gray-700">Email</span>
+        <span className="mb-1 block text-sm font-medium text-ink/80">Email</span>
         <input
           className={inputClasses}
           type="email"
@@ -45,7 +45,7 @@ export default function AuthForm({
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-sm font-medium text-gray-700">Password</span>
+        <span className="mb-1 block text-sm font-medium text-ink/80">Password</span>
         <input
           className={inputClasses}
           type="password"
@@ -59,13 +59,13 @@ export default function AuthForm({
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:opacity-50"
+        className="w-full rounded-md bg-brand-800 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-900 disabled:opacity-50"
       >
         {status === "submitting" ? "Submitting…" : submitLabel}
       </button>
 
       {status === "success" && (
-        <p className="text-sm text-green-600">Success.</p>
+        <p className="text-sm text-green-700">Success.</p>
       )}
       {status === "error" && <p className="text-sm text-red-600">{errorMessage}</p>}
     </form>
