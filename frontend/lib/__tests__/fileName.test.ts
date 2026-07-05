@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildNdaFileName, sanitizeFileNameSegment } from "@/lib/fileName";
+import { buildDocumentFileName, buildNdaFileName, sanitizeFileNameSegment } from "@/lib/fileName";
 
 describe("sanitizeFileNameSegment", () => {
   it("returns the value unchanged when it is already filename-safe", () => {
@@ -59,5 +59,15 @@ describe("buildNdaFileName", () => {
     });
     expect(fileName).not.toMatch(/[\\/:]/);
     expect(fileName.endsWith(".pdf")).toBe(true);
+  });
+});
+
+describe("buildDocumentFileName", () => {
+  it("builds a filename from the document name", () => {
+    expect(buildDocumentFileName("Cloud Service Agreement")).toBe("Cloud-Service-Agreement.pdf");
+  });
+
+  it("falls back when the document name is blank", () => {
+    expect(buildDocumentFileName("")).toBe("Document.pdf");
   });
 });

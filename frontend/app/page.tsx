@@ -44,7 +44,7 @@ function SaveDocumentButton({ formData }: { formData: NdaFormData }) {
       const title =
         [formData.partyAName, formData.partyBName].filter((name) => name.trim()).join(" × ") ||
         "Untitled Mutual NDA";
-      await saveDocument(title, formData);
+      await saveDocument("mutual-nda", title, formData);
       setStatus("saved");
     } catch (err) {
       setStatus("error");
@@ -77,7 +77,7 @@ function HomeContent() {
     if (!documentId || !getSession()) return;
 
     getDocument(Number(documentId))
-      .then((document) => setFormData(document.data))
+      .then((document) => setFormData({ ...EMPTY_FORM_DATA, ...document.data }))
       .catch(() => {
         // Not our document, or it no longer exists — leave the form as-is.
       });

@@ -46,7 +46,7 @@ describe("documents API client", () => {
     );
   });
 
-  it("saveDocument posts the title and data", async () => {
+  it("saveDocument posts the type, title and data", async () => {
     setSession("jwt-token", "a@b.com");
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -54,7 +54,7 @@ describe("documents API client", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await saveDocument("Acme x Globex", EMPTY_FORM_DATA);
+    await saveDocument("mutual-nda", "Acme x Globex", EMPTY_FORM_DATA);
 
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/documents"),

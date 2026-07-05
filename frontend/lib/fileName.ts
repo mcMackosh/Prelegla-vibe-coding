@@ -13,3 +13,9 @@ export function buildNdaFileName(formData: Pick<NdaFormData, "partyAName" | "par
   const partyB = sanitizeFileNameSegment(formData.partyBName, "PartyB");
   return `Mutual-NDA-${partyA}-${partyB}.pdf`;
 }
+
+/** e.g. buildDocumentFileName("Cloud Service Agreement") -> "Cloud-Service-Agreement.pdf" */
+export function buildDocumentFileName(documentName: string): string {
+  const name = sanitizeFileNameSegment(documentName, "Document");
+  return `${name}.pdf`;
+}

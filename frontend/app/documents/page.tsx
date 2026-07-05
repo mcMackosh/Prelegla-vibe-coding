@@ -8,6 +8,12 @@ import SiteHeader from "@/components/SiteHeader";
 import { DocumentSummary, listDocuments } from "@/lib/documents";
 import { getSession } from "@/lib/session";
 
+function documentHref(document: DocumentSummary): string {
+  return document.type === "mutual-nda"
+    ? `/?documentId=${document.id}`
+    : `/create/${document.type}?documentId=${document.id}`;
+}
+
 export default function DocumentsPage() {
   const router = useRouter();
   const [documents, setDocuments] = useState<DocumentSummary[] | null>(null);
@@ -50,7 +56,7 @@ export default function DocumentsPage() {
             {documents.map((document) => (
               <li key={document.id}>
                 <Link
-                  href={`/?documentId=${document.id}`}
+                  href={documentHref(document)}
                   className="block rounded-xl border border-brand-100 bg-white p-4 shadow-sm transition hover:border-accent-500"
                 >
                   <p className="font-serif text-base font-semibold text-brand-900">{document.title}</p>
