@@ -10,6 +10,7 @@ const styles = StyleSheet.create({
   coverField: { width: "50%", marginBottom: 8, paddingRight: 8 },
   coverLabel: { fontSize: 7, textTransform: "uppercase", color: "#6b7280", marginBottom: 2 },
   coverValue: { fontSize: 9 },
+  sectionHeading: { fontSize: 12, fontFamily: "Helvetica-Bold", marginBottom: 10 },
   clause: { marginBottom: 10, lineHeight: 1.5 },
   clauseTitle: { fontFamily: "Helvetica-Bold" },
   bold: { fontFamily: "Helvetica-Bold" },
@@ -58,6 +59,8 @@ export default function NdaPdfDocument({ formData }: { formData: NdaFormData }) 
             <Text style={styles.coverValue}>{coverValue(formData.purpose)}</Text>
           </View>
         </View>
+
+        <Text style={styles.sectionHeading}>Standard Terms</Text>
 
         {NDA_CLAUSES.map((clause, index) => (
           <View key={clause.title} wrap={false}>
