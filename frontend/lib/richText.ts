@@ -3,7 +3,7 @@ import { CoverPageToken, NdaFormData, TOKEN_TO_FIELD } from "./types";
 export type Segment =
   | { type: "text"; content: string }
   | { type: "bold"; content: string }
-  | { type: "field"; content: string; empty: boolean };
+  | { type: "field"; content: string; empty: boolean; fieldKey?: keyof NdaFormData };
 
 const SEGMENT_PATTERN = /\*\*(.+?)\*\*|\{\{(\w+)\}\}/g;
 
@@ -29,6 +29,7 @@ export function parseSegments(text: string, formData: NdaFormData): Segment[] {
         type: "field",
         content: value.trim() || `[${token}]`,
         empty: !value.trim(),
+        fieldKey,
       });
     }
 
