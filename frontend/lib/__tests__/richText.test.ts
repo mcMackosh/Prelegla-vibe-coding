@@ -30,7 +30,7 @@ describe("parseSegments", () => {
     const segments = parseSegments("State of {{governingLaw}}.", data);
     expect(segments).toEqual([
       { type: "text", content: "State of " },
-      { type: "field", content: "Delaware", empty: false, fieldKey: "governingLaw" },
+      { type: "field", content: "Delaware", empty: false },
       { type: "text", content: "." },
     ]);
   });
@@ -39,16 +39,14 @@ describe("parseSegments", () => {
     const segments = parseSegments("for the {{purpose}}", EMPTY_FORM_DATA);
     expect(segments).toEqual([
       { type: "text", content: "for the " },
-      { type: "field", content: "[purpose]", empty: true, fieldKey: "purpose" },
+      { type: "field", content: "[purpose]", empty: true },
     ]);
   });
 
   it("treats a whitespace-only field value as empty", () => {
     const data = withData({ purpose: "   " });
     const segments = parseSegments("{{purpose}}", data);
-    expect(segments).toEqual([
-      { type: "field", content: "[purpose]", empty: true, fieldKey: "purpose" },
-    ]);
+    expect(segments).toEqual([{ type: "field", content: "[purpose]", empty: true }]);
   });
 
   it("resolves an unmapped token name to an empty placeholder instead of crashing", () => {
@@ -60,8 +58,8 @@ describe("parseSegments", () => {
     const data = withData({ effectiveDate: "2026-07-03", mndaTerm: "one year" });
     const segments = parseSegments("{{effectiveDate}}{{mndaTerm}}", data);
     expect(segments).toEqual([
-      { type: "field", content: "2026-07-03", empty: false, fieldKey: "effectiveDate" },
-      { type: "field", content: "one year", empty: false, fieldKey: "mndaTerm" },
+      { type: "field", content: "2026-07-03", empty: false },
+      { type: "field", content: "one year", empty: false },
     ]);
   });
 
@@ -74,12 +72,7 @@ describe("parseSegments", () => {
     const data = withData({ purpose: '<script>alert("x")</script> & "quotes"' });
     const segments = parseSegments("{{purpose}}", data);
     expect(segments).toEqual([
-      {
-        type: "field",
-        content: '<script>alert("x")</script> & "quotes"',
-        empty: false,
-        fieldKey: "purpose",
-      },
+      { type: "field", content: '<script>alert("x")</script> & "quotes"', empty: false },
     ]);
   });
 
@@ -92,9 +85,9 @@ describe("parseSegments", () => {
       { type: "text", content: "This " },
       { type: "bold", content: "MNDA" },
       { type: "text", content: " commences on the " },
-      { type: "field", content: "2026-07-03", empty: false, fieldKey: "effectiveDate" },
+      { type: "field", content: "2026-07-03", empty: false },
       { type: "text", content: " and expires at the end of the " },
-      { type: "field", content: "one (1) year", empty: false, fieldKey: "mndaTerm" },
+      { type: "field", content: "one (1) year", empty: false },
       { type: "text", content: "." },
     ]);
   });
