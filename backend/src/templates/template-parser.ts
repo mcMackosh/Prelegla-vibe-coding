@@ -9,10 +9,10 @@
  */
 
 export type Segment =
-  | { type: "text"; content: string }
-  | { type: "bold"; content: string }
-  | { type: "link"; text: string; url: string }
-  | { type: "field"; key: string; label: string; possessive: boolean };
+  | { type: 'text'; content: string }
+  | { type: 'bold'; content: string }
+  | { type: 'link'; text: string; url: string }
+  | { type: 'field'; key: string; label: string; possessive: boolean };
 
 export type TemplateField = {
   key: string;
@@ -34,21 +34,25 @@ export type ParsedTemplate = {
 /** "Effective Date" -> "effectiveDate". Same text always produces the same key within one template. */
 function slugify(text: string): string {
   const words = text
-    .replace(/['’]/g, "")
+    .replace(/['’]/g, '')
     .split(/[^a-zA-Z0-9]+/)
     .filter(Boolean);
-  if (words.length === 0) return "field";
+  if (words.length === 0) return 'field';
   return (
     words[0].toLowerCase() +
     words
       .slice(1)
       .map((w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
-      .join("")
+      .join('')
   );
 }
 
 /** "Customer's" and "Customer" should fill the same field; the possessive "'s" is re-added at render time. */
-function parseFieldLabel(rawText: string): { key: string; label: string; possessive: boolean } {
+function parseFieldLabel(rawText: string): {
+  key: string;
+  label: string;
+  possessive: boolean;
+} {
   const possessiveMatch = rawText.match(/^(.*)['’]s$/);
   if (possessiveMatch) {
     const base = possessiveMatch[1].trim();
@@ -61,40 +65,51 @@ function parseFieldLabel(rawText: string): { key: string; label: string; possess
 const TOKEN_PATTERN =
   /<span([^>]*)>([\s\S]*?)<\/span>|\*\*([\s\S]+?)\*\*|\[([^\]]+)\]\(([^)]+)\)|<(https?:\/\/[^>]+)>/;
 
-function parseInline(text: string, fields: Map<string, TemplateField>): Segment[] {
+function parseInline(
+  text: string,
+  fields: Map<string, TemplateField>,
+): Segment[] {
   const segments: Segment[] = [];
   let remaining = text;
 
   while (remaining.length > 0) {
     const match = remaining.match(TOKEN_PATTERN);
     if (!match || match.index === undefined) {
-      segments.push({ type: "text", content: remaining });
+      segments.push({ type: 'text', content: remaining });
       break;
     }
 
     if (match.index > 0) {
-      segments.push({ type: "text", content: remaining.slice(0, match.index) });
+      segments.push({ type: 'text', content: remaining.slice(0, match.index) });
     }
 
-    const [full, spanAttrs, spanInner, boldContent, linkText, linkUrl, autoLinkUrl] = match;
+    const [
+      full,
+      spanAttrs,
+      spanInner,
+      boldContent,
+      linkText,
+      linkUrl,
+      autoLinkUrl,
+    ] = match;
 
     if (spanAttrs !== undefined) {
       const classMatch = spanAttrs.match(/class="([^"]*)"/);
-      const className = classMatch?.[1] ?? "";
+      const className = classMatch?.[1] ?? '';
       const innerText = spanInner.trim();
-      if (className.endsWith("_link") && innerText.length > 0) {
+      if (className.endsWith('_link') && innerText.length > 0) {
         const { key, label, possessive } = parseFieldLabel(innerText);
         if (!fields.has(key)) fields.set(key, { key, label });
-        segments.push({ type: "field", key, label, possessive });
+        segments.push({ type: 'field', key, label, possessive });
       } else if (innerText.length > 0) {
         segments.push(...parseInline(spanInner, fields));
       }
     } else if (boldContent !== undefined) {
-      segments.push({ type: "bold", content: boldContent });
+      segments.push({ type: 'bold', content: boldContent });
     } else if (linkText !== undefined) {
-      segments.push({ type: "link", text: linkText, url: linkUrl });
+      segments.push({ type: 'link', text: linkText, url: linkUrl });
     } else if (autoLinkUrl !== undefined) {
-      segments.push({ type: "link", text: autoLinkUrl, url: autoLinkUrl });
+      segments.push({ type: 'link', text: autoLinkUrl, url: autoLinkUrl });
     }
 
     remaining = remaining.slice(match.index + full.length);
@@ -109,12 +124,15 @@ const BOLD_TITLE = /^\s*\*\*([\s\S]+?)\*\*\.?\s*/;
 function splitTitle(rawText: string): { title?: string; rest: string } {
   const headerMatch = rawText.match(HEADER_SPAN_TITLE);
   if (headerMatch) {
-    const title = headerMatch[1].trim().replace(/\.$/, "");
-    return { title: title || undefined, rest: rawText.slice(headerMatch[0].length) };
+    const title = headerMatch[1].trim().replace(/\.$/, '');
+    return {
+      title: title || undefined,
+      rest: rawText.slice(headerMatch[0].length),
+    };
   }
   const boldMatch = rawText.match(BOLD_TITLE);
   if (boldMatch) {
-    const title = boldMatch[1].trim().replace(/\.$/, "");
+    const title = boldMatch[1].trim().replace(/\.$/, '');
     return { title, rest: rawText.slice(boldMatch[0].length) };
   }
   return { rest: rawText };
@@ -147,14 +165,17 @@ function parseListLines(lines: string[]): MutableClause[] {
       }
       stack.push({ depth, clause });
     } else if (rawLine.trim().length > 0 && stack.length > 0) {
-      stack[stack.length - 1].clause.rawText += " " + rawLine.trim();
+      stack[stack.length - 1].clause.rawText += ' ' + rawLine.trim();
     }
   }
 
   return roots;
 }
 
-function finalizeClause(mutable: MutableClause, fields: Map<string, TemplateField>): Clause {
+function finalizeClause(
+  mutable: MutableClause,
+  fields: Map<string, TemplateField>,
+): Clause {
   const { title, rest } = splitTitle(mutable.rawText);
   return {
     title,
@@ -164,17 +185,21 @@ function finalizeClause(mutable: MutableClause, fields: Map<string, TemplateFiel
 }
 
 export function parseTemplate(raw: string): ParsedTemplate {
-  const lines = raw.replace(/\r\n/g, "\n").split("\n");
+  const lines = raw.replace(/\r\n/g, '\n').split('\n');
 
   const firstMarkerIndex = lines.findIndex((line) => MARKER_LINE.test(line));
-  let contentLines = firstMarkerIndex === -1 ? [] : lines.slice(firstMarkerIndex);
+  let contentLines =
+    firstMarkerIndex === -1 ? [] : lines.slice(firstMarkerIndex);
 
   // The Common Paper attribution/license line is the trailing non-list paragraph.
   let attributionLine: string | undefined;
   for (let i = contentLines.length - 1; i >= 0; i--) {
     const trimmed = contentLines[i].trim();
     if (!trimmed) continue;
-    if (!MARKER_LINE.test(contentLines[i]) && trimmed.includes("Common Paper")) {
+    if (
+      !MARKER_LINE.test(contentLines[i]) &&
+      trimmed.includes('Common Paper')
+    ) {
       attributionLine = trimmed;
       contentLines = contentLines.slice(0, i);
     }
@@ -182,8 +207,12 @@ export function parseTemplate(raw: string): ParsedTemplate {
   }
 
   const fields = new Map<string, TemplateField>();
-  const clauses = parseListLines(contentLines).map((clause) => finalizeClause(clause, fields));
-  const attribution = attributionLine ? parseInline(attributionLine, new Map()) : [];
+  const clauses = parseListLines(contentLines).map((clause) =>
+    finalizeClause(clause, fields),
+  );
+  const attribution = attributionLine
+    ? parseInline(attributionLine, new Map())
+    : [];
 
   return { clauses, fields: Array.from(fields.values()), attribution };
 }

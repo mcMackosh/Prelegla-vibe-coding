@@ -1,13 +1,13 @@
-import { Injectable, NotFoundException, OnModuleInit } from "@nestjs/common";
-import * as fs from "fs";
-import * as path from "path";
-import { parseTemplate, ParsedTemplate } from "./template-parser";
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
+import { parseTemplate, ParsedTemplate } from './template-parser';
 
 export type DocumentTypeSummary = {
   id: string;
   name: string;
   description: string;
-  status: "available" | "planned";
+  status: 'available' | 'planned';
 };
 
 export type DocumentTypeDetail = DocumentTypeSummary & ParsedTemplate;
@@ -21,7 +21,7 @@ type CatalogEntry = DocumentTypeSummary & { templateFile: string };
  * the image mirrors the same backend/-next-to-templates/ layout (see backend/Dockerfile).
  */
 function repoRootPath(...segments: string[]): string {
-  return path.resolve(process.cwd(), "..", ...segments);
+  return path.resolve(process.cwd(), '..', ...segments);
 }
 
 @Injectable()
@@ -30,7 +30,7 @@ export class TemplatesService implements OnModuleInit {
   private readonly parsedCache = new Map<string, ParsedTemplate>();
 
   onModuleInit() {
-    const raw = fs.readFileSync(repoRootPath("catalog.json"), "utf-8");
+    const raw = fs.readFileSync(repoRootPath('catalog.json'), 'utf-8');
     const parsed = JSON.parse(raw) as { documentTypes: CatalogEntry[] };
     this.catalog = parsed.documentTypes;
   }
@@ -52,7 +52,7 @@ export class TemplatesService implements OnModuleInit {
 
     let parsedTemplate = this.parsedCache.get(id);
     if (!parsedTemplate) {
-      const raw = fs.readFileSync(repoRootPath(entry.templateFile), "utf-8");
+      const raw = fs.readFileSync(repoRootPath(entry.templateFile), 'utf-8');
       parsedTemplate = parseTemplate(raw);
       this.parsedCache.set(id, parsedTemplate);
     }

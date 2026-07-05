@@ -1,7 +1,7 @@
-import { Controller, Get, Param } from "@nestjs/common";
-import { TemplatesService } from "./templates.service";
+import { Controller, Get, Param } from '@nestjs/common';
+import { TemplatesService } from './templates.service';
 
-@Controller("templates")
+@Controller('templates')
 export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}
 
@@ -10,8 +10,8 @@ export class TemplatesController {
     return this.templatesService.listDocumentTypes();
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
+  @Get(':id')
+  findOne(@Param('id') id: string) {
     return this.templatesService.getDocumentType(id);
   }
 }

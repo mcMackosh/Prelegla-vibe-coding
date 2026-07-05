@@ -1,12 +1,18 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { DocumentsService } from './documents.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { TemplatesService } from '../templates/templates.service';
 
 describe('DocumentsService', () => {
   let service: DocumentsService;
   let prisma: {
     document: { create: jest.Mock; findMany: jest.Mock; findUnique: jest.Mock };
   };
+  let templatesService: { listDocumentTypes: jest.Mock };
 
   beforeEach(() => {
     prisma = {
@@ -16,7 +22,26 @@ describe('DocumentsService', () => {
         findUnique: jest.fn(),
       },
     };
-    service = new DocumentsService(prisma as unknown as PrismaService);
+    templatesService = {
+      listDocumentTypes: jest.fn().mockReturnValue([
+        {
+          id: 'mutual-nda',
+          name: 'Mutual Non-Disclosure Agreement',
+          description: '',
+          status: 'available',
+        },
+        {
+          id: 'cloud-service-agreement',
+          name: 'Cloud Service Agreement',
+          description: '',
+          status: 'available',
+        },
+      ]),
+    };
+    service = new DocumentsService(
+      prisma as unknown as PrismaService,
+      templatesService as unknown as TemplatesService,
+    );
   });
 
   describe('create', () => {
@@ -48,6 +73,34 @@ describe('DocumentsService', () => {
         title: 'Acme x Globex',
         createdAt,
       });
+    });
+
+    it('creates a document with an explicit, known document type', async () => {
+      prisma.document.create.mockResolvedValue({
+        id: 2,
+        type: 'cloud-service-agreement',
+        title: 'Acme CSA',
+        createdAt: new Date('2026-01-01'),
+      });
+
+      await service.create(7, {
+        type: 'cloud-service-agreement',
+        title: 'Acme CSA',
+        data: { customer: 'Acme' },
+      });
+
+      expect(prisma.document.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ type: 'cloud-service-agreement' }),
+        }),
+      );
+    });
+
+    it('throws BadRequestException for an unknown document type', async () => {
+      await expect(
+        service.create(7, { type: 'not-a-real-type', title: 'x', data: {} }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.document.create).not.toHaveBeenCalled();
     });
   });
 
