@@ -1,4 +1,3 @@
-import { NdaFormData } from "@/lib/types";
 import { getSession } from "@/lib/session";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -11,7 +10,7 @@ export type DocumentSummary = {
 };
 
 export type DocumentDetail = DocumentSummary & {
-  data: NdaFormData;
+  data: Record<string, string>;
 };
 
 function authHeader(): string {
@@ -45,11 +44,15 @@ export async function getDocument(id: number): Promise<DocumentDetail> {
   return parseResponse(response);
 }
 
-export async function saveDocument(title: string, data: NdaFormData): Promise<DocumentSummary> {
+export async function saveDocument(
+  type: string,
+  title: string,
+  data: Record<string, string>
+): Promise<DocumentSummary> {
   const response = await fetch(`${API_URL}/documents`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: authHeader() },
-    body: JSON.stringify({ type: "mutual-nda", title, data }),
+    body: JSON.stringify({ type, title, data }),
   });
   return parseResponse(response);
 }

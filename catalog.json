@@ -14,70 +14,70 @@
       "name": "Cloud Service Agreement",
       "description": "A comprehensive agreement for selling and buying cloud software and SaaS products, covering access, payment, security, liability, and confidentiality.",
       "templateFile": "templates/CSA.md",
-      "status": "planned"
+      "status": "available"
     },
     {
       "id": "design-partner-agreement",
       "name": "Design Partner Agreement",
       "description": "An agreement for early product access where partners provide feedback in exchange for using pre-release software, helping vendors develop and improve their products.",
       "templateFile": "templates/Design-Partner-Agreement.md",
-      "status": "planned"
+      "status": "available"
     },
     {
       "id": "service-level-agreement",
       "name": "Service Level Agreement",
       "description": "A standard SLA defining uptime targets, response time commitments, service credits, and remedies for cloud service providers.",
       "templateFile": "templates/SLA.md",
-      "status": "planned"
+      "status": "available"
     },
     {
       "id": "professional-services-agreement",
       "name": "Professional Services Agreement",
       "description": "An agreement for professional services engagements covering deliverables, intellectual property, payment terms, and project management.",
       "templateFile": "templates/PSA.md",
-      "status": "planned"
+      "status": "available"
     },
     {
       "id": "partnership-agreement",
       "name": "Partnership Agreement",
       "description": "A standard agreement for business partnerships covering cooperation obligations, trademark licensing, fees, confidentiality, and liability.",
       "templateFile": "templates/Partnership-Agreement.md",
-      "status": "planned"
+      "status": "available"
     },
     {
       "id": "software-license-agreement",
       "name": "Software License Agreement",
       "description": "A comprehensive license agreement for on-premise or installable software, covering licensing terms, restrictions, warranties, and support.",
       "templateFile": "templates/Software-License-Agreement.md",
-      "status": "planned"
+      "status": "available"
     },
     {
       "id": "data-processing-agreement",
       "name": "Data Processing Agreement",
       "description": "A GDPR-compliant data processing agreement covering data protection obligations, subprocessors, international transfers, and security requirements.",
       "templateFile": "templates/DPA.md",
-      "status": "planned"
+      "status": "available"
     },
     {
       "id": "pilot-agreement",
       "name": "Pilot Agreement",
       "description": "A short-term trial or evaluation agreement allowing prospective customers to test a product before committing to a longer-term deal.",
       "templateFile": "templates/Pilot-Agreement.md",
-      "status": "planned"
+      "status": "available"
     },
     {
       "id": "business-associate-agreement",
       "name": "Business Associate Agreement",
       "description": "A HIPAA-compliant agreement for business associates handling protected health information (PHI), covering privacy, security, and breach notification requirements.",
       "templateFile": "templates/BAA.md",
-      "status": "planned"
+      "status": "available"
     },
     {
       "id": "ai-addendum",
       "name": "AI Addendum",
       "description": "An addendum for agreements involving AI/ML features, covering input/output ownership, model training restrictions, and AI-specific disclaimers.",
       "templateFile": "templates/AI-Addendum.md",
-      "status": "planned"
+      "status": "available"
     }
   ]
 }

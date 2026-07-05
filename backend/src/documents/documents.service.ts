@@ -1,10 +1,14 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { TemplatesService } from '../templates/templates.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
+
+const DEFAULT_DOCUMENT_TYPE = 'mutual-nda';
 
 export type DocumentSummary = {
   id: number;
@@ -19,16 +23,27 @@ export type DocumentDetail = DocumentSummary & {
 
 @Injectable()
 export class DocumentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly templatesService: TemplatesService,
+  ) {}
 
   async create(
     userId: number,
     dto: CreateDocumentDto,
   ): Promise<DocumentSummary> {
+    const type = dto.type ?? DEFAULT_DOCUMENT_TYPE;
+    const knownTypes = this.templatesService
+      .listDocumentTypes()
+      .map((t) => t.id);
+    if (!knownTypes.includes(type)) {
+      throw new BadRequestException(`Unknown document type: ${type}`);
+    }
+
     const document = await this.prisma.document.create({
       data: {
         userId,
-        type: dto.type ?? 'mutual-nda',
+        type,
         title: dto.title,
         data: JSON.stringify(dto.data),
       },

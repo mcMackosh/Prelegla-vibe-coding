@@ -1,17 +1,11 @@
-import {
-  IsIn,
-  IsNotEmpty,
-  IsObject,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-
-const DOCUMENT_TYPES = ['mutual-nda'] as const;
+import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class CreateDocumentDto {
+  // Validated against the real catalog (TemplatesService) in DocumentsService,
+  // rather than a hardcoded list here, now that KAN-6 supports all 11 types.
   @IsOptional()
-  @IsIn(DOCUMENT_TYPES)
-  type?: (typeof DOCUMENT_TYPES)[number];
+  @IsString()
+  type?: string;
 
   @IsString()
   @IsNotEmpty()

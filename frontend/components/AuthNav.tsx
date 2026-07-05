@@ -26,6 +26,9 @@ export default function AuthNav() {
     return (
       <nav className="flex shrink-0 items-center gap-4 text-sm font-medium">
         <span className="hidden text-ink/60 sm:inline">{email}</span>
+        <Link href="/create" className="text-brand-700 hover:text-brand-900">
+          Document Types
+        </Link>
         <Link href="/documents" className="text-brand-700 hover:text-brand-900">
           My Documents
         </Link>
@@ -41,7 +44,10 @@ export default function AuthNav() {
   }
 
   return (
-    <nav className="flex shrink-0 gap-6 text-sm font-medium">
+    <nav className="flex shrink-0 items-center gap-6 text-sm font-medium">
+      <Link href="/create" className="text-brand-700 hover:text-brand-900">
+        Document Types
+      </Link>
       <Link href="/signin" className="text-brand-700 hover:text-brand-900">
         Sign in
       </Link>

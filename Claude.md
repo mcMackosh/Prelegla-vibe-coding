@@ -7,12 +7,13 @@ The long-term goal is for users to interact with an AI assistant to determine wh
 automatically populate the required fields.
 The supported document types are listed in the `catalog.json` file located in the project root.
 
-The current version includes a manual, editable form, a live read-only document preview, and a freeform AI chat
-(backed by OpenRouter) for the Mutual Non-Disclosure Agreement template only — see Implementation Status below.
-The form and the chat both write into the same field state, which the preview renders live. The chat can only
-fill in NDA fields today; it does not yet determine which document type the user needs. All other catalog
-entries are still `"planned"`. Users can sign up / sign in for real (hashed passwords, JWT sessions) and save/
-reload their own NDA documents — see KAN-5 below.
+The current version supports all 11 catalog document types (see KAN-6 below): a manual, editable form, a live
+read-only document preview, and a freeform AI chat (backed by OpenRouter), generated from the same generic
+template engine for every type. The Mutual NDA keeps its original hand-built components (`NdaForm`/`NdaPreview`/
+`/chat/nda`) as the reference implementation; the other 10 types run through the generic `/create/:type` flow.
+A router chat (`/chat/route`) helps a user figure out which catalog type they need, always suggesting the
+closest available match rather than refusing outright. Users can sign up / sign in for real (hashed passwords,
+JWT sessions) and save/reload their own documents of any type — see KAN-5 below.
 
 ## Development Workflow
 
@@ -102,3 +103,55 @@ scripts/stop-windows.ps1
   - New `/documents` page: lists the signed-in user's saved NDAs; clicking one navigates to `/?documentId=<id>`, which `app/page.tsx` loads via `getDocument()` and populates into the existing `NdaFormData` state — the same state the form, chat, preview, and PDF export already share.
   - `app/page.tsx` adds a "Save to My Documents" button next to the PDF download button, visible only when signed in; it POSTs the current form data with a title derived from the two party names (falls back to "Untitled Mutual NDA").
   - Jest/ts-jest note: Prisma 7's generated client uses extensionless `.js` imports (ESM-style) that ts-jest/CommonJS can't resolve by default — fixed via a `moduleNameMapper` in `backend/package.json`'s jest config stripping the `.js` suffix so it resolves through `moduleFileExtensions` instead. This was latent before KAN-5 (no prior test imported `PrismaService`).
+- **KAN-6** (Expand to all supported legal document types) — Done. All 11 `catalog.json` entries flipped from
+  `"planned"` to `"available"`.
+  - **Why not hand-author 10 more `ndaClauses.ts`/`nda-fields.ts`-style files:** the 11 Common Paper templates
+    turned out to be structurally inconsistent (1-4 levels of nested numbered lists; section/clause titles marked
+    with `header_2`/`header_3` spans in some docs and bold text in others (Mutual-NDA has no header spans at
+    all); fillable variables marked with `coverpage_link`, `keyterms_link`, `orderform_link`, `sow_link`, or
+    `businessterms_link` spans depending on the template — same concept, different class name per doc;
+    Definitions-list terms marked 3 different ways (bold inside an id-anchored span, an empty anchor span
+    immediately before separate bold text, or plain bold with no span at all)). Hand-transcribing that many
+    variations reliably wasn't realistic — instead:
+  - `backend/src/templates/template-parser.ts`: one tolerant parser for all 11 raw `templates/*.md` files.
+    Builds a recursive `Clause` tree (title optional, body as rich `Segment[]`, nested `children`) from 4-space
+    indented markdown lists at any depth, and treats *any* `<span class="X_link">non-empty text</span>` as a
+    fillable field (key derived by slugifying the span text), regardless of the specific `_link` class name used.
+    `header_2`/`header_3` spans (or, absent those, a leading bold run — Mutual-NDA's case) at the very start of a
+    list item become that clause's title; everything else degrades gracefully (untitled clause, plain text)
+    instead of throwing. Possessive spans (`Customer's`) resolve to the same field key as their base form
+    (`Customer`) and re-append `'s` at render time. Tested against the real template files (not fixtures) for
+    all 11 documents, plus precise structural assertions for Mutual-NDA (locking in no regression from the prior
+    hand-authored version) and PSA (nested lists).
+  - `backend/src/templates/templates.service.ts` + controller + module: `GET /templates` (catalog list) and
+    `GET /templates/:id` (parsed clauses + fields), reading `catalog.json`/`templates/*.md` from the repo root
+    at runtime via `path.resolve(process.cwd(), '..', ...)` — this only works because the backend process's cwd
+    is `backend/` with `templates/`/`catalog.json` as siblings, both locally (`npm run start:dev` from `backend/`)
+    and in Docker (see the Dockerfile/build-context note below).
+  - **Docker layout change:** the backend's `docker-compose.yml` build context changed from `./backend` to the
+    repo root (with `dockerfile: backend/Dockerfile`) so the image can `COPY templates/` and `catalog.json`
+    alongside `backend/`, mirroring the same relative layout `TemplatesService` expects locally. Added a root
+    `.dockerignore` since the context root changed (excludes `frontend/`, `node_modules`, etc. from the backend
+    build's context — the frontend's own build is unaffected, since its context is still `./frontend`).
+  - `backend/src/chat/chat.service.ts`: the NDA-specific prompt/retry logic was factored into
+    `callOpenRouterForFields(messages, documentName, fields)`, reused by both the untouched `handleNdaTurn`
+    (`POST /chat/nda`, exact prior behavior) and the new `handleDocumentTurn(documentTypeId, messages)`
+    (`POST /chat/documents/:type`) driven by that type's parsed fields instead of hardcoded `NDA_FIELDS`.
+  - **Document-type router**: `routeToDocumentType(message)` (`POST /chat/route`) is a single classification
+    call against the catalog's name/description list. Per the ticket, it always picks the single closest
+    available catalog entry and explains the choice in "reply" — it never refuses outright, even when the
+    user's request doesn't match any catalog entry well.
+  - `backend/src/documents/`: `CreateDocumentDto.type` is validated against the real catalog
+    (`TemplatesService.listDocumentTypes()`) instead of a hardcoded `['mutual-nda']`, so saved documents can be
+    any of the 11 types.
+  - **Frontend**: generic components mirroring the existing `Nda*` ones but data-driven from a document type's
+    parsed fields/clauses — `GenericDocumentForm`, `GenericDocumentPreview` (recursive clause/segment renderer:
+    bold/field/link segments, nested sub-clauses rendered as nested `<ol>` at any depth), `GenericDocumentPdf` +
+    `GenericDocumentDownloadButton`, `DocumentChatPanel`. New pages: `/create` (document-type picker grid +
+    the router-chat assistant) and `/create/[type]` (generic creator: form + live preview + chat + save/load +
+    PDF, mirroring `app/page.tsx`'s architecture). The Mutual NDA's existing `/` page/components are untouched —
+    `/create`'s picker routes the `mutual-nda` card to `/` and the other 10 to `/create/:type`.
+  - `frontend/lib/documents.ts`: `saveDocument`/`DocumentDetail` generalized from `NdaFormData`-specific typing
+    to `Record<string, string>` plus an explicit `type` parameter, since documents are no longer only NDAs.
+  - `AuthNav` gained a "Document Types" link, visible whether signed in or out (browsing/creating a document
+    doesn't require an account — only saving one to "My Documents" does).
