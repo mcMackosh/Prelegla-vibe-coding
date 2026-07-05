@@ -71,7 +71,8 @@ describe('ChatService', () => {
 
     const result = await service.handleNdaTurn([{ role: 'user', content: 'Party A is Acme Corp.' }]);
 
-    expect(result).toEqual({ reply: 'Got it.', fields: { partyAName: 'Acme Corp.' } });
+    expect(result.fields).toEqual({ partyAName: 'Acme Corp.' });
+    expect(result.reply.startsWith('Got it.')).toBe(true);
   });
 
   it('includes every NDA field name in the system prompt sent to OpenRouter', async () => {
@@ -101,7 +102,8 @@ describe('ChatService', () => {
 
     const result = await service.handleNdaTurn([{ role: 'user', content: 'hi' }]);
 
-    expect(result).toEqual({ reply: 'hi', fields: {} });
+    expect(result.fields).toEqual({});
+    expect(result.reply).toMatch(/^hi.*\?$/);
     expect(global.fetch).toHaveBeenCalledTimes(2);
   }, 10000);
 
@@ -151,7 +153,8 @@ describe('ChatService', () => {
 
     const result = await service.handleNdaTurn([{ role: 'user', content: 'hi' }]);
 
-    expect(result).toEqual({ reply: 'hi', fields: {} });
+    expect(result.fields).toEqual({});
+    expect(result.reply).toMatch(/^hi.*\?$/);
     expect(global.fetch).toHaveBeenCalledTimes(2);
   }, 10000);
 
@@ -162,9 +165,44 @@ describe('ChatService', () => {
 
     const result = await service.handleNdaTurn([{ role: 'user', content: 'hi' }]);
 
-    expect(result).toEqual({ reply: 'hi', fields: {} });
+    expect(result.fields).toEqual({});
+    expect(result.reply).toMatch(/^hi.*\?$/);
     expect(global.fetch).toHaveBeenCalledTimes(2);
   }, 10000);
+
+  it('appends a follow-up question when fields are still missing and the model did not ask one', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue(
+      mockOpenRouterResponse({ reply: 'Got it, Acme Corp. is Party A.', fields: { partyAName: 'Acme Corp.' } })
+    );
+
+    const result = await service.handleNdaTurn([{ role: 'user', content: 'Party A is Acme Corp.' }]);
+
+    expect(result.reply.startsWith('Got it, Acme Corp. is Party A.')).toBe(true);
+    expect(result.reply.trim().endsWith('?')).toBe(true);
+  });
+
+  it('does not append a follow-up question when the model already asked one', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue(
+      mockOpenRouterResponse({ reply: "Got it. What's Party A's address?", fields: { partyAName: 'Acme Corp.' } })
+    );
+
+    const result = await service.handleNdaTurn([{ role: 'user', content: 'Party A is Acme Corp.' }]);
+
+    expect(result.reply).toBe("Got it. What's Party A's address?");
+  });
+
+  it('does not append a follow-up question once every field is filled', async () => {
+    const allFieldsFilled = Object.fromEntries(
+      ['partyAName', 'partyAAddress', 'partyASignerName', 'partyASignerTitle', 'partyBName', 'partyBAddress', 'partyBSignerName', 'partyBSignerTitle', 'effectiveDate', 'purpose', 'mndaTerm', 'termOfConfidentiality', 'governingLaw', 'jurisdiction'].map((key) => [key, 'value'])
+    );
+    (global.fetch as jest.Mock).mockResolvedValue(
+      mockOpenRouterResponse({ reply: 'Your Mutual NDA is ready to review.', fields: allFieldsFilled })
+    );
+
+    const result = await service.handleNdaTurn([{ role: 'user', content: 'that is everything' }]);
+
+    expect(result.reply).toBe('Your Mutual NDA is ready to review.');
+  });
 
   it('throws InternalServerErrorException when OPENROUTER_API_KEY is not configured', async () => {
     delete process.env.OPENROUTER_API_KEY;

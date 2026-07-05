@@ -11,7 +11,8 @@ The current version includes a manual, editable form, a live read-only document 
 (backed by OpenRouter) for the Mutual Non-Disclosure Agreement template only — see Implementation Status below.
 The form and the chat both write into the same field state, which the preview renders live. The chat can only
 fill in NDA fields today; it does not yet determine which document type the user needs. All other catalog
-entries are still `"planned"`.
+entries are still `"planned"`. Users can sign up / sign in for real (hashed passwords, JWT sessions) and save/
+reload their own NDA documents — see KAN-5 below.
 
 ## Development Workflow
 
@@ -74,7 +75,7 @@ scripts/stop-windows.ps1
 - **KAN-3** (V1 technical foundation) — Done, merged to `main`. Unaffected by KAN-2 changes (backend/DB/Docker
   foundation is independent of the frontend's form/preview layout).
   - `backend/`: NestJS app, Prisma + SQLite via `@prisma/adapter-better-sqlite3` (Prisma 7 driver-adapter model), `User` model + migration.
-  - Auth: `POST /auth/signup` / `POST /auth/signin` are validated stubs only — no hashing, no persistence yet.
+  - Auth: `POST /auth/signup` / `POST /auth/signin` were validated stubs only at the time (no hashing, no persistence) — real hashing/JWT/persistence landed with KAN-5, see below.
   - `frontend/`: `/signup` and `/signin` placeholder pages added, linked from the NDA Creator header.
   - Docker: separate `backend/Dockerfile` and `frontend/Dockerfile` (multi-stage), orchestrated by root `docker-compose.yml`. Backend runs `prisma db push --force-reset` on every container start to recreate the schema.
   - `scripts/start-*` / `scripts/stop-*` wrap `docker compose up -d --build` / `down`.
@@ -87,4 +88,17 @@ scripts/stop-windows.ps1
   - No chat persistence — conversation and extracted fields live in frontend React state only, same as the rest of `NdaFormData`.
   - Known limitation: a later chat turn could still overwrite a field the user manually edited in between (no per-field "user touched this" tracking) — accepted trade-off, not solved.
   - Known upstream limitation: free-tier OpenRouter models/providers are prone to two transient failure modes — `429` rate-limiting (mislabeled "rate limited"), and occasionally a malformed completion (invalid JSON, or JSON missing the expected `reply`/`fields` shape; observed on `gpt-oss-20b:free`'s `Darkbloom` provider, e.g. garbled field-name characters). Neither is a bug. `chat.service.ts` retries the whole request/parse/validate cycle up to 3 times with a 1.5s backoff on either failure mode before giving up and returning `502 Bad Gateway`.
+  - **Prompt tuning** (post-launch, per user feedback that the assistant felt "linear, like you're filling in fields yourself rather than an AI"): the system prompt in `buildSystemPrompt()` now tells the model to parse unstructured/multi-fact messages in one pass instead of asking field-by-field, and to fill a field with a reasonable default when the user explicitly defers the decision ("you decide", "up to you").
+  - **Always-ask-a-follow-up backstop**: the system prompt requires ending "reply" with a question whenever a field is still blank, but prompt compliance isn't guaranteed — `ensureFollowUpQuestion()` in `chat.service.ts` deterministically appends a question naming the first still-missing field if the model's reply doesn't already end in `?` while fields remain empty. This runs after every successful parse, independent of the model's own behavior.
+  - **Chat input focus**: `NdaChatPanel.tsx` refocuses the message `<input>` after every turn (success or error) and when the panel opens, so the user can keep typing without reaching for the mouse.
 - **Frontend visual redesign** (post-KAN-4, no ticket) — Done. Navy/gold "legal-tech" theme (serif headings via Lora, warm paper background, `SiteHeader` component) applied across all pages; chat converted from an inline column to the floating widget described above.
+- **KAN-5** (Support multiple users) — Done.
+  - `backend/src/auth/`: `signup`/`signin` now hash passwords with `bcryptjs` and issue a JWT (`@nestjs/jwt`, 7-day expiry) instead of returning a stub status. `JwtAuthGuard` (`jwt-auth.guard.ts`) verifies the `Authorization: Bearer <token>` header and attaches `req.userId`, protecting the new documents endpoints.
+  - `JWT_SECRET` falls back to a fixed dev value (`backend/.env.example`, `docker-compose.yml`) — acceptable because the database (and any accounts/sessions in it) resets on every server restart per this ticket's own scope, so there's no production secret to protect.
+  - New `Document` Prisma model (`userId`, `type`, `title`, `data` as a JSON string, `createdAt`) + `backend/src/documents/`: `POST /documents` (create), `GET /documents` (list current user's, summary fields only), `GET /documents/:id` (full record, 403/404 if not owned by the caller). All guarded by `JwtAuthGuard`.
+  - `frontend/lib/session.ts`: JWT + email in `localStorage` (no cookies/server sessions — consistent with the temporary-DB scope). `frontend/lib/documents.ts` is the API client, attaching the bearer token.
+  - `frontend/components/AuthNav.tsx`: shared auth-aware header nav (Sign in/Sign up vs. email + My Documents + Sign out) used on `/`, `/signin`, `/signup`, and `/documents` instead of each page hardcoding its own links.
+  - `/signin` and `/signup` now actually call the backend, store the session, and redirect to `/` on success (previously placeholders with no real effect).
+  - New `/documents` page: lists the signed-in user's saved NDAs; clicking one navigates to `/?documentId=<id>`, which `app/page.tsx` loads via `getDocument()` and populates into the existing `NdaFormData` state — the same state the form, chat, preview, and PDF export already share.
+  - `app/page.tsx` adds a "Save to My Documents" button next to the PDF download button, visible only when signed in; it POSTs the current form data with a title derived from the two party names (falls back to "Untitled Mutual NDA").
+  - Jest/ts-jest note: Prisma 7's generated client uses extensionless `.js` imports (ESM-style) that ts-jest/CommonJS can't resolve by default — fixed via a `moduleNameMapper` in `backend/package.json`'s jest config stripping the `.js` suffix so it resolves through `moduleFileExtensions` instead. This was latent before KAN-5 (no prior test imported `PrismaService`).

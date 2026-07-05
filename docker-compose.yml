@@ -11,6 +11,7 @@ services:
       PORT: "3001"
       FRONTEND_ORIGIN: "http://localhost:3000"
       OPENROUTER_MODEL: "openai/gpt-oss-20b:free"
+      JWT_SECRET: "dev-insecure-secret-change-me"
 
   frontend:
     build:

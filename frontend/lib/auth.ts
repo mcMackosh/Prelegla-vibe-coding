@@ -6,7 +6,7 @@ export type AuthCredentials = {
 };
 
 export type AuthResponse = {
-  status: string;
+  accessToken: string;
   email: string;
 };
 
