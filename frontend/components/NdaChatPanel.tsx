@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChatMessage, sendNdaChatMessage } from "@/lib/chat";
 import { NdaFormData } from "@/lib/types";
 
@@ -40,6 +40,13 @@ export default function NdaChatPanel({
   const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      inputRef.current?.focus();
+    }
+  }, [isOpen]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,6 +64,9 @@ export default function NdaChatPanel({
       setStatus("idle");
     } catch {
       setStatus("error");
+    } finally {
+      // Return focus to the input so the user can keep typing without reaching for the mouse.
+      inputRef.current?.focus();
     }
   }
 
@@ -104,6 +114,7 @@ export default function NdaChatPanel({
 
           <form onSubmit={handleSubmit} className="flex gap-2 border-t border-brand-100 p-3">
             <input
+              ref={inputRef}
               className="w-full rounded-md border border-brand-100 bg-white px-3 py-2 text-sm text-ink shadow-sm focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
               placeholder="Type a message…"
               value={input}
