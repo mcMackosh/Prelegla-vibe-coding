@@ -27,9 +27,9 @@ function EditableField({
       onBlur={(e) => onFieldChange(fieldKey, e.currentTarget.textContent ?? "")}
       className={
         (empty
-          ? "bg-accent-100 text-accent-600"
-          : "bg-brand-50 font-medium text-brand-700") +
-        " rounded px-1 outline-none focus:ring-1 focus:ring-accent-500"
+          ? "border-accent-300 bg-accent-50 text-accent-600"
+          : "border-brand-200 bg-white font-medium text-brand-700") +
+        " rounded border px-1.5 py-0.5 shadow-sm outline-none transition focus:border-accent-500 focus:ring-1 focus:ring-accent-500"
       }
     >
       {content}
@@ -87,12 +87,11 @@ function CoverField({
   multiline?: boolean;
 }) {
   const inputClasses =
-    "w-full rounded-md border border-transparent bg-transparent px-1 py-0.5 text-sm text-ink transition focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500" +
-    (value.trim() ? "" : " italic text-accent-600");
+    "mt-1 w-full rounded-md border border-brand-100 bg-white px-3 py-2 text-sm text-ink shadow-sm transition focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500";
 
   return (
     <div>
-      <label className="text-xs font-semibold uppercase tracking-wide text-brand-700/70">
+      <label className="block text-xs font-semibold uppercase tracking-wide text-brand-700/70">
         {label}
         {multiline ? (
           <textarea
@@ -128,7 +127,7 @@ function SignerField({
 }) {
   return (
     <input
-      className="w-full rounded-md border border-transparent bg-transparent px-1 py-0.5 text-sm text-ink transition focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
+      className="w-full rounded-md border border-brand-100 bg-white px-3 py-2 text-sm text-ink shadow-sm transition focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
       placeholder={placeholder}
       value={value}
       onChange={(e) => onFieldChange(fieldKey, e.target.value)}
@@ -205,15 +204,13 @@ export default function NdaPreview({
         ).map((signer) => (
           <div key={signer.label}>
             <p className="text-xs font-semibold uppercase tracking-wide text-brand-700/70">{signer.label} Signature</p>
-            <div className="mt-4 border-b border-brand-200 pb-1">
+            <div className="mt-3 space-y-2">
               <SignerField
                 fieldKey={signer.nameKey}
                 value={formData[signer.nameKey]}
                 placeholder="Signer name"
                 onFieldChange={onFieldChange}
               />
-            </div>
-            <div className="mt-1">
               <SignerField
                 fieldKey={signer.titleKey}
                 value={formData[signer.titleKey]}
