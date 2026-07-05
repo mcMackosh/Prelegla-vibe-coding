@@ -21,7 +21,7 @@ describe('ChatService', () => {
     process.env = {
       ...originalEnv,
       OPENROUTER_API_KEY: 'test-key',
-      OPENROUTER_MODEL: 'openai/gpt-oss-120b:free',
+      OPENROUTER_MODEL: 'openai/gpt-oss-20b:free',
     };
     global.fetch = jest.fn();
   });
@@ -87,22 +87,43 @@ describe('ChatService', () => {
   });
 
   it('throws BadGatewayException when OpenRouter responds with a non-2xx status', async () => {
-    (global.fetch as jest.Mock).mockResolvedValue({ ok: false } as Response);
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: false, status: 500 } as Response);
 
     await expect(service.handleNdaTurn([{ role: 'user', content: 'hi' }])).rejects.toThrow(
       BadGatewayException
     );
   });
 
-  it('throws BadGatewayException when the network request itself fails', async () => {
+  it('retries after a 429 and succeeds once the rate limit clears', async () => {
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({ ok: false, status: 429 } as Response)
+      .mockResolvedValueOnce(mockOpenRouterResponse({ reply: 'hi', fields: {} }));
+
+    const result = await service.handleNdaTurn([{ role: 'user', content: 'hi' }]);
+
+    expect(result).toEqual({ reply: 'hi', fields: {} });
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  }, 10000);
+
+  it('throws BadGatewayException when every retry attempt is rate-limited', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: false, status: 429 } as Response);
+
+    await expect(service.handleNdaTurn([{ role: 'user', content: 'hi' }])).rejects.toThrow(
+      BadGatewayException
+    );
+    expect(global.fetch).toHaveBeenCalledTimes(4);
+  }, 10000);
+
+  it('throws BadGatewayException when the network request itself fails on every attempt', async () => {
     (global.fetch as jest.Mock).mockRejectedValue(new Error('network down'));
 
     await expect(service.handleNdaTurn([{ role: 'user', content: 'hi' }])).rejects.toThrow(
       BadGatewayException
     );
-  });
+    expect(global.fetch).toHaveBeenCalledTimes(4);
+  }, 10000);
 
-  it('throws BadGatewayException when the model returns unparsable JSON', async () => {
+  it('throws BadGatewayException when the model returns unparsable JSON on every attempt', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       json: async () => ({ choices: [{ message: { content: 'not json' } }] }),
@@ -111,15 +132,39 @@ describe('ChatService', () => {
     await expect(service.handleNdaTurn([{ role: 'user', content: 'hi' }])).rejects.toThrow(
       BadGatewayException
     );
-  });
+    expect(global.fetch).toHaveBeenCalledTimes(4);
+  }, 10000);
 
-  it('throws BadGatewayException when the parsed response is missing required keys', async () => {
+  it('throws BadGatewayException when the parsed response is missing required keys on every attempt', async () => {
     (global.fetch as jest.Mock).mockResolvedValue(mockOpenRouterResponse({ reply: 'hi' }));
 
     await expect(service.handleNdaTurn([{ role: 'user', content: 'hi' }])).rejects.toThrow(
       BadGatewayException
     );
-  });
+    expect(global.fetch).toHaveBeenCalledTimes(4);
+  }, 10000);
+
+  it('retries after unparsable JSON and succeeds on a later attempt', async () => {
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ choices: [{ message: { content: 'not json' } }] }) } as Response)
+      .mockResolvedValueOnce(mockOpenRouterResponse({ reply: 'hi', fields: {} }));
+
+    const result = await service.handleNdaTurn([{ role: 'user', content: 'hi' }]);
+
+    expect(result).toEqual({ reply: 'hi', fields: {} });
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  }, 10000);
+
+  it('retries after a malformed shape (missing fields) and succeeds on a later attempt', async () => {
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce(mockOpenRouterResponse({ reply: 'hi' }))
+      .mockResolvedValueOnce(mockOpenRouterResponse({ reply: 'hi', fields: {} }));
+
+    const result = await service.handleNdaTurn([{ role: 'user', content: 'hi' }]);
+
+    expect(result).toEqual({ reply: 'hi', fields: {} });
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  }, 10000);
 
   it('throws InternalServerErrorException when OPENROUTER_API_KEY is not configured', async () => {
     delete process.env.OPENROUTER_API_KEY;

@@ -10,7 +10,7 @@ services:
       DATABASE_URL: "file:./dev.db"
       PORT: "3001"
       FRONTEND_ORIGIN: "http://localhost:3000"
-      OPENROUTER_MODEL: "openai/gpt-oss-120b:free"
+      OPENROUTER_MODEL: "openai/gpt-oss-20b:free"
 
   frontend:
     build:
