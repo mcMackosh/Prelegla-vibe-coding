@@ -1,4 +1,4 @@
-import { NDA_ATTRIBUTION, NDA_CLAUSES } from "@/lib/ndaClauses";
+import { NDA_CLAUSES } from "@/lib/ndaClauses";
 import { parseSegments, Segment } from "@/lib/richText";
 import { NdaFormData } from "@/lib/types";
 
@@ -55,6 +55,8 @@ export default function NdaPreview({ formData }: { formData: NdaFormData }) {
         <CoverField label="Purpose" value={formData.purpose} />
       </section>
 
+      <h2 className="font-serif text-base font-semibold text-brand-900">Standard Terms</h2>
+
       <ol className="space-y-4">
         {NDA_CLAUSES.map((clause) => (
           <li key={clause.title}>
@@ -83,7 +85,27 @@ export default function NdaPreview({ formData }: { formData: NdaFormData }) {
         ))}
       </section>
 
-      <p className="mt-8 text-xs text-ink/40">{NDA_ATTRIBUTION}</p>
+      <p className="mt-8 text-xs text-ink/40">
+        Common Paper Mutual Non-Disclosure Agreement{" "}
+        <a
+          href="https://commonpaper.com/standards/mutual-nda/1.0/"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          Version 1.0
+        </a>{" "}
+        free to use under{" "}
+        <a
+          href="https://creativecommons.org/licenses/by/4.0/"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          CC BY 4.0
+        </a>
+        .
+      </p>
     </article>
   );
 }
