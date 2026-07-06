@@ -155,3 +155,11 @@ scripts/stop-windows.ps1
     to `Record<string, string>` plus an explicit `type` parameter, since documents are no longer only NDAs.
   - `AuthNav` gained a "Document Types" link, visible whether signed in or out (browsing/creating a document
     doesn't require an account — only saving one to "My Documents" does).
+- **Known issue — stale JWT after a container restart causes `500` on save** (found 2026-07-06, not yet fixed).
+  Because the schema is force-reset on every backend start (per KAN-3's Docker design above), a `User` row can
+  disappear while a previously-issued JWT (7-day expiry, fixed `JWT_SECRET`) is still sitting in the browser's
+  `localStorage` and still passes `JwtAuthGuard`. `POST /documents` then tries to create a `Document` row with
+  that now-nonexistent `userId`, SQLite raises `SQLITE_CONSTRAINT_FOREIGNKEY`, and it surfaces to the client as
+  an unhandled `500 Internal Server Error` instead of a meaningful `401`. Workaround: sign out and sign back in
+  after any backend restart. Real fix would be having `DocumentsService`/`JwtAuthGuard` verify the user still
+  exists and return `401` instead of letting Prisma's FK error bubble up — not yet implemented.
